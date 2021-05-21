@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherIN</title>
+    {{!-- <link rel="stylesheet" href="../../static/navbar.css"> --}}
+    <link rel="stylesheet" href="../../static/home.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" integrity="sha512-PgQMlq+nqFLV4ylk1gwUOgm6CtIIXkKwaIHp/PAIWHzig/lKZSEGKEysh0TCVbHJXCLN7WetD8TFecIky75ZfQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    {{!-- <link rel="stylesheet" href="../../static/footer.css"> --}}
+</head>
+<body>
+    {{!-- <header>
+        <nav>
+            <ul id="navbar">
+                <li id="name"><a href="">WeatherIN</a></li>
+                <li id="home" class="common"><a href="">Home</a></li>
+                <li id="about" class="common"><a href="">About</a></li>
+            </ul>
+        </nav>
+    </header> --}}
+    {{>nav}}
+    <main>
+    <!-- Load icon library -->
+    <!-- The form -->
+    <div id="formcont">
+    <form class="example" onsubmit="event.preventDefault();">
+    <input type="text" placeholder="Search.." name="search" id="input">
+    <button type="submit" id="search"><i class="fa fa-search"></i></button>
+    </form>
+    </div>
+    <!-- For Info -->
+    <div id="outer">
+        <div class="box">
+        <!-- <div id="weathercon">
+            <i class="fas fa-sun" style="color: #eccc68; font-size: 7rem; margin-bottom: 2vh;"></i>
+        </div> -->
+
+        <div class="info">
+            <h2 id="loc" class="location"><i class="fas fa-street-view" style="color: chartreuse; margin-right: 1vw;"></i></h2>
+            <p id="weather"></p>
+            <p id="date"></p>
+            <h1 id="temp"></h1>
+            <h3 id="tempmin_max"></h3>
+        </div> 
+    </div>
+    </div>
+    </main>
+    {{!-- <footer id="footer">
+        <p>© WeatherIN | All rights reserved</p>
+    </footer> --}}
+    {{>footer}}
+</body>
+
+<script>
+    let loca= document.getElementById('loc');
+    let date= document.getElementById('date');
+    let temp= document.getElementById('temp');
+    let min= document.getElementById('tempmin_max');
+    let weather= document.getElementById('weather');
+
+    var arr= ["MON","TUE","WED","THU","FRI","SAT","SUN"];
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+
+    if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
+} 
+//Get latitude and longitude;
+function successFunction(position) {
+    var lat = position.coords.latitude;
+    // var lat = 28.573263;
+    console.log(lat);
+    var long = position.coords.longitude;
+    // var long = 77.196890;
+    console.log(long);
+    getdata(lat,long);
+};
+function errorFunction()
+{
+    console.log("Error");
+};
+
+// From url
+function getdata(lat,long)
+{
+    let url= `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${long}&localityLanguage=en`
+    fetch(url).then((response)=>
+    {
+        return response.json();
+    }).then((data)=>
+    {
+        if(data.city=="")
+        {
+        console.log(data.localityInfo.administrative[2].name);
+        let loc= data.localityInfo.administrative[2].name;
+        let name= loc.split(" ");
+        let count= data.countryCode;
+        console.log(name[0]);
+        loca.innerText=`${name[0]},${count}`;
+
+        // fetching weather info
+            let url= `http://api.openweathermap.org/data/2.5/weather?q=${name[0]}&APPID=85a99646b80e407b26c1deba252dfb46`;
+            fetch(url).then((response)=>
+            {
+                return response.json();
+            }).then((data)=>
+            {
+                console.log(data.weather[0].main);
+                weather.innerText=data.weather[0].main;
+
+                console.log(data.weather[0].description);
+                console.log(Math.round((data.main.temp)-273));
+
+                temp.innerText= Math.round((data.main.temp)-273)+"°C";
+                console.log(Math.round((data.main.temp_min)-273))
+                let mintemp= Math.round((data.main.temp_min)-273);
+                console.log(Math.round((data.main.temp_max)-273))
+                let maxtemp=Math.round((data.main.temp_max)-273);
+                min.innerText=`Min ${mintemp}°C | Max ${maxtemp}°C`;
+
+                fordate();
+            });
+        }
+        else
+        {
+        let count= data.countryCode;
+        let name= data.city;
+        loca.innerText=`${name[0]},${count}`;
+        // fetching weather info
+        let url= `http://api.openweathermap.org/data/2.5/weather?q=${data.city}&APPID=85a99646b80e407b26c1deba252dfb46`
+        fetch(url).then((response)=>
+        {
+            return response.json();
+        }).then((data)=>
+        {
+            console.log(data.weather[0].main);
+            weather.innerText=data.weather[0].main;
+            console.log(data.weather[0].description);
+            console.log(Math.round((data.main.temp)-273));
+            temp.innerText= Math.round((data.main.temp)-273)+"°C";
+            console.log(Math.round((data.main.temp_min)-273))
+            let mintemp= Math.round((data.main.temp_min)-273);
+            console.log(Math.round((data.main.temp_max)-273))
+            let maxtemp=Math.round((data.main.temp_max)-273);
+            min.innerText=`Min ${mintemp}°C | Max ${maxtemp}°C`;
+            fordate();
+        });
+    }
+    });
+};
+function fordate()
+{
+    setInterval(()=>
+        {
+            let getdate=()=>
+            {
+                var currDate= new Date();
+                date.innerText=`${arr[(currDate.getDay())-1]} | ${months[currDate.getMonth()]}-${currDate.getDate()} | ${currDate.toLocaleTimeString()}`; 
+            };
+            getdate();
+        },1000);
+}
+var btn= document.getElementById('search');
+btn.addEventListener('click',()=>
+{
+    var input= document.getElementById('input').value;
+    // console.log(input);
+    fordate();
+    // From url
+    function getdata()
+    {
+    let url= `http://api.openweathermap.org/data/2.5/weather?q=${input}&APPID=85a99646b80e407b26c1deba252dfb46`
+    fetch(url).then((response)=>
+    {
+        return response.json();
+    }).then((data)=>
+    {
+        console.log(data);
+        let locm= data.name;
+        let counm= data.sys.country;
+        loca.innerText=`${locm},${counm}`;
+        console.log(`${locm},${counm}`);
+        console.log(data);
+        console.log(data.weather[0].main);
+        weather.innerText=data.weather[0].main;
+        console.log(data.weather[0].description);
+        console.log(Math.round((data.main.temp)-273));
+        temp.innerText= Math.round((data.main.temp)-273)+"°C";
+        console.log(Math.round((data.main.temp_min)-273))
+        let mintemp= Math.round((data.main.temp_min)-273);
+        console.log(Math.round((data.main.temp_max)-273))
+        let maxtemp=Math.round((data.main.temp_max)-273);
+        min.innerText=`Min ${mintemp}°C | Max ${maxtemp}°C`;
+    }).catch((err)=>
+    {
+        console.log('error')
+    });
+}
+    getdata();
+});
+</script>
+</html>
